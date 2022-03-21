@@ -6,7 +6,7 @@ variable "owner" {
 variable "region" {
   description = "region"
   type        = string
-  default     = "us-east-2"
+  default     = "eu-central-1"
 }
 variable "shared_credentials" {
   description = "shared_credentials_file"

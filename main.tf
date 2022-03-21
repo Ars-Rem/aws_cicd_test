@@ -36,7 +36,7 @@ module "vpc" {
   name = "my-vpc"
   cidr = var.vpc_cidr_block
 
-  azs             = ["us-east-2a", "us-east-2b"]
+  azs             = ["${var.region}a", "${var.region}b"]
   private_subnets = ["${var.privet_subnet_1}", "${var.privet_subnet_2}"]
   public_subnets  = ["${var.public_subnet_1}", "${var.public_subnet_2}"]
 
@@ -70,13 +70,14 @@ resource "aws_codepipeline" "codepipeline" {
       name             = "Source"
       category         = "Source"
       owner            = "AWS"
+      //provider         = "GitHub"
       provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["source_output"]
 
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.example.arn
-        FullRepositoryId = "Ars-R/html_test"
+        FullRepositoryId = "Ars-Rem/html"
         BranchName       = "main"
       }
     }
@@ -210,7 +211,7 @@ EOF
 data "aws_caller_identity" "current" {}
 
 resource "aws_kms_key" "s3kmskey" {
-  description                        = "s3bkmskey-${var.owner}"
+  description                        = "s3bkmskey-${var.owner}-${var.user}"
   deletion_window_in_days            = 7
   bypass_policy_lockout_safety_check = false
   is_enabled                         = true
@@ -295,7 +296,7 @@ resource "aws_kms_key" "s3kmskey" {
 }
 
 resource "aws_kms_alias" "s3kmskey" {
-  name          = "alias/s3bkmskey-${var.owner}"
+  name          = "alias/s3bkmskey-${var.owner}-${var.user}"
   target_key_id = aws_kms_key.s3kmskey.id
 }
-//
+
