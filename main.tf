@@ -298,3 +298,4 @@ resource "aws_kms_alias" "s3kmskey" {
   name          = "alias/s3bkmskey-${var.owner}"
   target_key_id = aws_kms_key.s3kmskey.id
 }
+//
