@@ -1,4 +1,3 @@
-
 terraform {
   required_providers {
     aws = {
@@ -8,7 +7,9 @@ terraform {
 
   }
 }
-
+provider "github" {
+  token = "${ TOKEN }"
+}
 # Configure the AWS Provider
 provider "aws" {
   region                  = "${var.region}"
@@ -17,4 +18,10 @@ provider "aws" {
   //alias = "primary"
 }
 
+// module "consul" {
+//   source = "git@github.com:Ars-Rem/aws_cicd_test.git"
+// }
 
+// module "consul" {
+//   source = "s3::https://s3-eu-west-1.amazonaws.com/examplecorp-terraform-modules/vpc.zip"
+// }

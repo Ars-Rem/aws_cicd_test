@@ -48,7 +48,7 @@ module "vpc" {
     Environment = "dev"
   }
 }
-
+#***********************************************************************************************************************************************************
 resource "aws_codepipeline" "codepipeline" {
   name     = "tf-test-pipeline"
   role_arn = aws_iam_role.codepipeline_role.arn
@@ -69,7 +69,7 @@ resource "aws_codepipeline" "codepipeline" {
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "AWS"
+      owner            = "ThirdParty"
       //provider         = "GitHub"
       provider         = "CodeStarSourceConnection"
       version          = "1"
@@ -89,7 +89,7 @@ resource "aws_codepipeline" "codepipeline" {
     action {
       name             = "Build"
       category         = "Build"
-      owner            = "AWS"
+      owner     = "ThirdParty"
       provider         = "CodeBuild"
       input_artifacts  = ["source_output"]
       output_artifacts = ["build_output"]
@@ -107,7 +107,7 @@ resource "aws_codepipeline" "codepipeline" {
     action {
       name            = "Deploy"
       category        = "Deploy"
-      owner           = "AWS"
+      owner           = "ThirdParty"
       provider        = "CloudFormation"
       input_artifacts = ["build_output"]
       version         = "1"
@@ -215,7 +215,7 @@ resource "aws_kms_key" "s3kmskey" {
   deletion_window_in_days            = 7
   bypass_policy_lockout_safety_check = false
   is_enabled                         = true
-  multi_region                       = false
+  multi_region                       = true
   policy                             = <<EOF
   {
       "Id": "key-consolepolicy-3",
