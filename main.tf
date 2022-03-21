@@ -24,6 +24,9 @@ module "iam_group_with_policies" {
 
   custom_group_policy_arns = [
     "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser",
+    "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess",
+    "arn:aws:iam::aws:policy/AWSCodePipelineFullAccess",
+    "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
   ]
 }
 
@@ -292,6 +295,6 @@ resource "aws_kms_key" "s3kmskey" {
 }
 
 resource "aws_kms_alias" "s3kmskey" {
-  name          = "alias/s3kmskey-${var.owner}"
+  name          = "alias/s3bkmskey-${var.owner}"
   target_key_id = aws_kms_key.s3kmskey.id
 }
