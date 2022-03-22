@@ -18,3 +18,7 @@ output "aws_codepipeline_role_arn" {
 output "location" {
   value = aws_s3_bucket.codepipeline_bucket.bucket
 }
+
+output "arn" {
+    value = aws_codecommit_repository.test.arn
+}

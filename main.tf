@@ -35,8 +35,7 @@ resource "aws_codecommit_repository" "test" {
   repository_name = "MyTestRepository"
   description     = "This is the Sample App Repository"
   default_branch = "main"
-  
-}
+}  
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
@@ -84,7 +83,7 @@ resource "aws_codepipeline" "codepipeline" {
 
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.example.arn
-        FullRepositoryId = "Ars-Rem/html"
+        FullRepositoryId = "aws_codecommit_repository.test.clone_url_http"
         BranchName       = "main"
       }
     }
