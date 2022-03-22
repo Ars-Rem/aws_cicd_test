@@ -7,14 +7,14 @@
 // }
 
 output "role_arn" {
-    value = aws_iam_role.codepipeline_role.arn
+  value = aws_iam_role.codepipeline_role.arn
 }
 output "ConnectionArn" {
-    value = aws_codestarconnections_connection.example.arn
+  value = aws_codestarconnections_connection.example.arn
 }
 output "aws_codepipeline_role_arn" {
-    value = aws_iam_role.codepipeline_role.arn
+  value = aws_iam_role.codepipeline_role.arn
 }
 output "location" {
-    value = aws_s3_bucket.codepipeline_bucket.bucket
+  value = aws_s3_bucket.codepipeline_bucket.bucket
 }

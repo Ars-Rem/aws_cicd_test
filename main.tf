@@ -26,8 +26,16 @@ module "iam_group_with_policies" {
     "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser",
     "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess",
     "arn:aws:iam::aws:policy/AWSCodePipelineFullAccess",
-    "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
+    "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess",
+    "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
   ]
+}
+
+resource "aws_codecommit_repository" "test" {
+  repository_name = "MyTestRepository"
+  description     = "This is the Sample App Repository"
+  default_branch = "main"
+  
 }
 
 module "vpc" {
@@ -58,7 +66,7 @@ resource "aws_codepipeline" "codepipeline" {
     type     = "S3"
 
     encryption_key {
-      id   = data.aws_caller_identity.current.arn
+      id   = data.aws_caller_identity.s3bkmskey.arn
       type = "KMS"
     }
   }
@@ -69,8 +77,7 @@ resource "aws_codepipeline" "codepipeline" {
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "ThirdParty"
-      //provider         = "GitHub"
+      owner            = "AWS"
       provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["source_output"]
@@ -89,7 +96,7 @@ resource "aws_codepipeline" "codepipeline" {
     action {
       name             = "Build"
       category         = "Build"
-      owner     = "ThirdParty"
+      owner            = "AWS"
       provider         = "CodeBuild"
       input_artifacts  = ["source_output"]
       output_artifacts = ["build_output"]
@@ -107,7 +114,7 @@ resource "aws_codepipeline" "codepipeline" {
     action {
       name            = "Deploy"
       category        = "Deploy"
-      owner           = "ThirdParty"
+      owner           = "AWS"
       provider        = "CloudFormation"
       input_artifacts = ["build_output"]
       version         = "1"
@@ -124,15 +131,14 @@ resource "aws_codepipeline" "codepipeline" {
 }
 
 resource "aws_codestarconnections_connection" "example" {
-  name          = "example-connection"
+  name          = "aws_connect_to_git"
   provider_type = "GitHub"
 }
-
-resource "aws_s3_bucket" "codepipeline_bucket_log" {
-  bucket        = "deploy-bucket-${var.owner}-log"
-  acl           = "log-delivery-write"
-  force_destroy = true
-}
+// resource "aws_s3_bucket" "codepipeline_bucket_log" {
+//   bucket        = "deploy-bucket-${var.owner}-log"
+//   acl           = "log-delivery-write"
+//   force_destroy = true
+// }
 
 resource "aws_s3_bucket" "codepipeline_bucket" {
   bucket        = "deploy-bucket-${var.owner}"
@@ -140,12 +146,12 @@ resource "aws_s3_bucket" "codepipeline_bucket" {
   force_destroy = true
 
   versioning {
-    enabled = var.enabled
+    enabled = false
   }
-  logging {
-    target_bucket = aws_s3_bucket.codepipeline_bucket_log.id
-    target_prefix = "log/"
-  }
+  // logging {
+  //   target_bucket = aws_s3_bucket.codepipeline_bucket_log.id
+  //   target_prefix = "log/"
+  // }
 }
 #pipeline
 resource "aws_iam_role" "codepipeline_role" {
@@ -208,7 +214,10 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
 }
 EOF
 }
-data "aws_caller_identity" "current" {}
+data "aws_caller_identity" "s3bkmskey" {
+  //name = "alias/s3bkmskey-${var.owner}-${var.user}"
+}
+
 
 resource "aws_kms_key" "s3kmskey" {
   description                        = "s3bkmskey-${var.owner}-${var.user}"
@@ -295,8 +304,8 @@ resource "aws_kms_key" "s3kmskey" {
   EOF
 }
 
+
 resource "aws_kms_alias" "s3kmskey" {
   name          = "alias/s3bkmskey-${var.owner}-${var.user}"
   target_key_id = aws_kms_key.s3kmskey.id
 }
-

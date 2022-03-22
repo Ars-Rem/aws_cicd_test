@@ -6,7 +6,7 @@ variable "owner" {
 variable "region" {
   description = "region"
   type        = string
-  default     = "eu-central-1"
+  default     = "us-west-1"
 }
 variable "shared_credentials" {
   description = "shared_credentials_file"
@@ -63,13 +63,7 @@ variable "user_arn" {
   default = "arn:aws:iam::175016064603:user/User"
 }
 #*************************************************
-variable "enabled" {
-  description = "turn ON"
-  type        = string
-  default     = "true"
-}
-variable "disabled" {
-  description = "turn OFF"
-  type        = string
-  default     = "false"
+
+variable "provider_git" {
+  default = "GitHubEnterpriseServer"
 }
