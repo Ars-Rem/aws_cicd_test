@@ -4,12 +4,13 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 3.0"
     }
-
+    // github = {
+    //   source  = "integrations/github"
+    //   version = ">= 4.8"
+    // }
   }
 }
-provider "github" {
-  token = TOKEN
-}
+
 # Configure the AWS Provider
 provider "aws" {
   region                  = var.region
@@ -17,7 +18,7 @@ provider "aws" {
   profile                 = var.profile
   //alias = "primary"
 }
-
+ 
 // module "consul" {
 //   source = "git@github.com:Ars-Rem/aws_cicd_test.git"
 // }

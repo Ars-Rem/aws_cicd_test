@@ -2,7 +2,7 @@ module "iam_user" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-user"
   version = "~> 4"
 
-  name          = var.user
+  name          = "${var.user}"
   force_destroy = true
 
   pgp_key = "keybase:test"
@@ -14,7 +14,7 @@ module "iam_group_with_policies" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-group-with-policies"
   version = "~> 4"
 
-  name = var.iam_group
+  name = "${var.iam_group}"
 
   group_users = [
     "${var.user}"
@@ -23,19 +23,52 @@ module "iam_group_with_policies" {
   attach_iam_self_management_policy = true
 
   custom_group_policy_arns = [
-    "arn:aws:iam::aws:policy/AWSCodeCommitPowerUser",
+    "arn:aws:iam::aws:policy/AWSCodeCommitFullAccess",
     "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess",
     "arn:aws:iam::aws:policy/AWSCodePipelineFullAccess",
     "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess",
-    "arn:aws:iam::aws:policy/AWSCodeStarFullAccess"
+    "arn:aws:iam::aws:policy/AWSCodeStarFullAccess",
+    "arn:aws:iam::aws:policy/IAMReadOnlyAccess",
+    "arn:aws:iam::aws:policy/IAMSelfManageServiceSpecificCredentials"
   ]
 }
 
-resource "aws_codecommit_repository" "test" {
+
+resource "aws_codecommit_repository" "repository" {
   repository_name = "MyTestRepository"
   description     = "This is the Sample App Repository"
   default_branch = "main"
-}  
+}
+  
+
+
+// resource "null_resource" "image" {
+//   provisioner "local-exec" {
+//       command = <<EOF
+          
+//           git init
+//           git add .
+//           git commit -m "init commit"
+//           git remote add origin ${aws_codecommit_repository.repository.clone_url_ssh}
+//           git push -u origin main
+//       EOF
+//       working_dir = "applications"
+//       }
+//     depends_on = [
+//       aws_codecommit_repository.repository,
+//     ]
+//   }
+
+resource "null_resource" "clean_up" {
+  provisioner "local-exec" {
+    when = destroy
+    command = <<EOF
+      rm -rf .git/
+    EOF
+    working_dir = "application"
+  }
+}
+
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
@@ -133,24 +166,26 @@ resource "aws_codestarconnections_connection" "example" {
   name          = "aws_connect_to_git"
   provider_type = "GitHub"
 }
-// resource "aws_s3_bucket" "codepipeline_bucket_log" {
-//   bucket        = "deploy-bucket-${var.owner}-log"
-//   acl           = "log-delivery-write"
-//   force_destroy = true
-// }
+resource "aws_s3_bucket" "codepipeline_bucket_log" {
+  bucket        = "deploy-bucket-${var.owner}-log"
+  force_destroy = true
+}
 
 resource "aws_s3_bucket" "codepipeline_bucket" {
   bucket        = "deploy-bucket-${var.owner}"
-  acl           = "private"
   force_destroy = true
 
   versioning {
-    enabled = false
+    enabled = true
   }
-  // logging {
-  //   target_bucket = aws_s3_bucket.codepipeline_bucket_log.id
-  //   target_prefix = "log/"
-  // }
+  logging {
+    target_bucket = aws_s3_bucket.codepipeline_bucket_log.id
+    target_prefix = "log/"
+  }
+}
+resource "aws_s3_bucket_acl" "codepipeline_bucket" {
+  bucket = aws_s3_bucket.codepipeline_bucket.id
+  acl = "private"
 }
 #pipeline
 resource "aws_iam_role" "codepipeline_role" {
@@ -307,4 +342,13 @@ resource "aws_kms_key" "s3kmskey" {
 resource "aws_kms_alias" "s3kmskey" {
   name          = "alias/s3bkmskey-${var.owner}-${var.user}"
   target_key_id = aws_kms_key.s3kmskey.id
+}
+
+resource "aws_secretsmanager_secret" "to_git" {
+  name_prefix = "codebuild/dockerhub"
+  }
+
+resource "aws_secretsmanager_secret_version" "keys" {
+  secret_id     = aws_secretsmanager_secret.to_git.id
+  secret_string = jsonencode(var.keys)
 }

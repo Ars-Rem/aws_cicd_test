@@ -58,12 +58,16 @@ variable "privet_subnet_2" {
   type        = string
   default     = "172.16.102.0/24"
 }
-# todo del****************************************
-variable "user_arn" {
-  default = "arn:aws:iam::175016064603:user/User"
-}
-#*************************************************
 
 variable "provider_git" {
   default = "GitHubEnterpriseServer"
+}
+
+variable "keys" {
+  default = {
+    key1 = "value1"
+    key2 = "value2"
+  }
+
+  type = map(string)
 }
