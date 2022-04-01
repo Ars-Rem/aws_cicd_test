@@ -70,3 +70,13 @@ variable "keys" {
   }
   type = map(string)
 }
+
+variable "repository" {
+  default = "Ars-Rem/html"
+}
+// variable "dockerhub_credentionals" {
+//   type = string
+// }
+// variable "codestar_connector_credentionals" {
+//   type = string
+// }

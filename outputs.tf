@@ -1,10 +1,10 @@
-// // output "key_id" {
-// //   value = aws_kms_key.my_kms_key.key_id
-// // }
+// // // output "key_id" {
+// // //   value = aws_kms_key.my_kms_key.key_id
+// // // }
 
-// // output "key_arn" {
-// //   value = aws_kms_key.my_kms_key.arn
-// // }
+// // // output "key_arn" {
+// // //   value = aws_kms_key.my_kms_key.arn
+// // // }
 
 
 // output "role_arn" {
@@ -26,4 +26,8 @@
 // }
 // output "git" {
 //   value = aws_secretsmanager_secret.to_git.arn
+// }
+
+// output "FullRepositoryId" {
+//   value = aws_codecommit_repository.repository.clone_url_http
 // }

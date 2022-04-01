@@ -1,0 +1,13 @@
+version: 0.2
+phases:
+  install:
+    commands:
+    - "apt install npm"
+  pre-build:
+    commands:
+    - terraform init
+    - terraform validate
+  build:
+    commands:
+    - terraform apply -auto-approve
+    
