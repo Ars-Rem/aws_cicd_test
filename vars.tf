@@ -16,7 +16,7 @@ variable "shared_credentials" {
 variable "user" {
   description = "user"
   type        = string
-  default     = "User"
+  default     = "CI-User"
 }
 variable "profile" {
   description = "profile"
@@ -26,7 +26,7 @@ variable "profile" {
 variable "iam_group" {
   description = "iam_group"
   type        = string
-  default     = "Creators"
+  default     = "CI_Account"
 }
 
 # Variables for VPC
@@ -71,8 +71,11 @@ variable "keys" {
   type = map(string)
 }
 
-variable "repository" {
-  default = "Ars-Rem/html"
+variable "repo_owner" {
+  default = "Ars-Rem"
+}
+variable "repo_name" {
+  default = "html"
 }
 // variable "dockerhub_credentionals" {
 //   type = string

@@ -20,6 +20,7 @@ module "iam_group_with_policies" {
     "arn:aws:iam::aws:policy/IAMSelfManageServiceSpecificCredentials"
   ]
 }
+
 resource "aws_iam_user" "user" {
   name = "${var.user}"
   path = "/"
@@ -258,9 +259,9 @@ resource "aws_codepipeline" "codepipeline" {
 
       configuration = {
         ConnectionArn    = aws_codestarconnections_connection.example.arn
-        FullRepositoryId = "Ars-Rem/html"
+        FullRepositoryId = "${var.repo_owner}/${var.repo_name}"
         BranchName = "main"
-        }
+      }
     }
   }
 
@@ -290,7 +291,7 @@ resource "aws_codepipeline" "codepipeline" {
       category        = "Deploy"
       owner           = "AWS"
       provider        = "CloudFormation"
-      input_artifacts = ["build_output"]
+      input_artifacts = ["source_output"]
       version         = "1"
 
       configuration = {
