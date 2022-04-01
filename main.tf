@@ -208,7 +208,7 @@ resource "aws_kms_alias" "s3kmskey" {
 }
 
 resource "aws_codestarconnections_connection" "example" {
-  name          = "example-connection"
+  name          = "connect_to_GitHub_html"
   provider_type = "GitHub"
 }
 
@@ -232,7 +232,7 @@ resource "aws_s3_bucket_acl" "codepipeline_bucket_acl" {
 
 
 resource "aws_codepipeline" "codepipeline" {
-  name     = "tf-test-pipeline"
+  name     = "deploy_html_to_s3"
   role_arn = aws_iam_role.codepipeline_role.arn
   
   artifact_store {
@@ -304,9 +304,4 @@ resource "aws_codepipeline" "codepipeline" {
   }
 }
 
-
-
-resource "aws_s3_bucket" "codepipeline_bucket_to" {
-  bucket = "test-bucket-${var.owner}"
-}
 

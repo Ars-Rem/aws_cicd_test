@@ -6,3 +6,5 @@ state.tf
 terraform.tfvars
 /test
 /application
+/html
+main.old
