@@ -77,6 +77,16 @@ variable "repo_owner" {
 variable "repo_name" {
   default = "html"
 }
+
+variable "alias_name" {
+  type    = string
+  default = "s3bkmskey"
+}
+
+variable "name_codepipeline_role" {
+  type = string
+  default = "role_to_pipeline"
+}
 // variable "dockerhub_credentionals" {
 //   type = string
 // }
