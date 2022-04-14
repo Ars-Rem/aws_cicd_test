@@ -36,6 +36,18 @@ variable "vpc_cidr_block" {
   default     = "172.16.0.0/16"
 }
 
+variable "sbn_cidr_block_public" {
+  description = "CIDR subnet"
+  type        = string
+  default     = "172.16.1.0/24"
+}
+
+variable "sbn_cidr_block_privet" {
+  description = "CIDR subnet"
+  type        = string
+  default     = "172.16.2.0/24"
+}
+
 #Variable for public subnets
 variable "public_subnet_1" {
   description = "CIDR subnet"
@@ -70,7 +82,9 @@ variable "keys" {
   }
   type = map(string)
 }
-
+variable "path" {
+  default = "https://github.com/"
+}
 variable "repo_owner" {
   default = "Ars-Rem"
 }
@@ -84,9 +98,59 @@ variable "alias_name" {
 }
 
 variable "name_codepipeline_role" {
-  type = string
+  type    = string
   default = "role_to_pipeline"
 }
+
+# Variables for Security Group
+
+variable "sg_ingress_proto" {
+  description = "Protocol ingress"
+  type        = string
+  default     = "TCP"
+}
+
+variable "sg_ingress_ssh" {
+  description = "Port ingress"
+  type        = string
+  default     = "22"
+}
+variable "sg_ingress_http" {
+  description = "Port ingress"
+  type        = string
+  default     = "8080"
+}
+
+variable "sg_ingress_all" {
+  description = "Port ingress"
+  type        = string
+  default     = "-1"
+}
+
+variable "sg_ingress_cidr_block" {
+  description = "CIDR block ingress"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
+variable "sg_egress_proto" {
+  description = "Protocol egress"
+  type        = string
+  default     = "-1"
+}
+
+variable "sg_egress_all" {
+  description = "Port egress"
+  type        = string
+  default     = "0"
+}
+
+variable "sg_egress_cidr_block" {
+  description = "CIDR block egress"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
 // variable "dockerhub_credentionals" {
 //   type = string
 // }

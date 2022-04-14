@@ -8,3 +8,5 @@ terraform.tfvars
 /application
 /html
 main.old
+buildspec.yaml
+/buildspec
