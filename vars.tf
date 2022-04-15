@@ -150,7 +150,11 @@ variable "sg_egress_cidr_block" {
   type        = string
   default     = "0.0.0.0/0"
 }
-
+variable "aws_codepipeline_name" {
+  description = "codepipeline_name"
+  type = string
+  default = "deploy_html_to_s3"
+}
 // variable "dockerhub_credentionals" {
 //   type = string
 // }

@@ -1,7 +1,7 @@
 #data block
 #data buildspec  
 data "local_file" "buildspec" {
-    filename = "buildspec.yml.tmpl"
+  filename = "buildspec.yml.tmpl"
 }
 
 module "iam_group_with_policies" {
@@ -23,7 +23,8 @@ module "iam_group_with_policies" {
     "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess",
     "arn:aws:iam::aws:policy/AWSCodeStarFullAccess",
     "arn:aws:iam::aws:policy/IAMReadOnlyAccess",
-    "arn:aws:iam::aws:policy/IAMSelfManageServiceSpecificCredentials"
+    "arn:aws:iam::aws:policy/IAMSelfManageServiceSpecificCredentials",
+    "arn:aws:iam::aws:policy/AmazonS3FullAccess"
   ]
 }
 
@@ -94,12 +95,28 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         "codebuild:StartBuild"
       ],
       "Resource": "*"
-    }
+    },
+    {
+  "Effect": "Allow",
+  "Resource": [
+      "arn:aws:s3:::to-project-${var.owner}/*",
+      "arn:aws:s3:::codepipeline-us-west-1-*",
+      "arn:aws:iam::175016064603:role/aws_iam_role_to_project"
+  ],
+  "Action": [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:GetObjectVersion",
+      "s3:GetBucketAcl",
+      "s3:GetBucketLocation"
+    ]
+ }
+
   ]
 }
 EOF
 }
-
+#arn:aws:s3:::codepipeline-us-west-1-*
 // resource "aws_codecommit_repository" "repository" {
 //   repository_name = "html"
 //   description     = "This is the Sample"
@@ -128,7 +145,7 @@ EOF
 
 # Create a VPC
 resource "aws_vpc" "vpc" {
-  cidr_block = "${var.vpc_cidr_block}"
+  cidr_block = var.vpc_cidr_block
 
   // tags = {
   //   Owner = "${var.owner}"
@@ -149,8 +166,8 @@ data "aws_availability_zones" "az" {
 }
 # Create a subnet
 resource "aws_subnet" "subnet_public" {
-  vpc_id                  = "${aws_vpc.vpc.id}"
-  cidr_block              = "${var.sbn_cidr_block_public}"
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = var.sbn_cidr_block_public
   map_public_ip_on_launch = true
 
   tags = {
@@ -159,8 +176,8 @@ resource "aws_subnet" "subnet_public" {
   }
 }
 resource "aws_subnet" "subnet_privet" {
-  vpc_id                  = "${aws_vpc.vpc.id}"
-  cidr_block              = "${var.sbn_cidr_block_privet}"
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = var.sbn_cidr_block_privet
   map_public_ip_on_launch = false
 
   tags = {
@@ -224,7 +241,11 @@ resource "aws_kms_key" "s3kmskey" {
             "Sid": "Enable IAM User Permissions",
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::${var.owner}:root"
+                "AWS": [
+                  "arn:aws:iam::${var.owner}:root",
+                  "arn:aws:iam::${var.owner}:role/aws_iam_role_to_project",
+                  "arn:aws:iam::175016064603:user/${var.user}"
+                ]
             },
             "Action": "kms:*",
             "Resource": "*"
@@ -235,7 +256,8 @@ resource "aws_kms_key" "s3kmskey" {
             "Principal": {
                 "AWS": [
                     "arn:aws:iam::${var.owner}:role/${var.name_codepipeline_role}",
-                    "arn:aws:iam::${var.owner}:user/${var.user}"
+                    "arn:aws:iam::${var.owner}:user/${var.user}",
+                    "arn:aws:iam::${var.owner}:role/aws_iam_role_to_project"
                 ]
             },
             "Action": [
@@ -262,7 +284,8 @@ resource "aws_kms_key" "s3kmskey" {
             "Principal": {
                 "AWS": [
                     "arn:aws:iam::${var.owner}:role/${var.name_codepipeline_role}",
-                    "arn:aws:iam::${var.owner}:user/${var.user}"
+                    "arn:aws:iam::${var.owner}:user/${var.user}",
+                    "arn:aws:iam::${var.owner}:role/aws_iam_role_to_project"
                 ]
             },
             "Action": [
@@ -280,7 +303,8 @@ resource "aws_kms_key" "s3kmskey" {
             "Principal": {
                 "AWS": [
                     "arn:aws:iam::${var.owner}:role/${var.name_codepipeline_role}",
-                    "arn:aws:iam::${var.owner}:user/${var.user}"
+                    "arn:aws:iam::${var.owner}:user/${var.user}",
+                    "arn:aws:iam::${var.owner}:role/aws_iam_role_to_project"
                 ]
             },
             "Action": [
@@ -342,14 +366,38 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
   }
 }
 
+
+resource "aws_s3_bucket_policy" "web" {
+  bucket = aws_s3_bucket.to-project.id
+
+
+  policy = <<EOF
+  {
+	"Version": "2012-10-17",
+	"Statement": [
+		 {
+     "Sid": "PublicReadGetObject",
+     "Effect": "Allow",
+     "Principal": "*",
+     "Action": "s3:GetObject",
+    
+     "Resource": "arn:aws:s3:::to-project-${var.owner}/**"
+ }
+	]
+}
+EOF
+}
+# "Action": "s3:GetObject",
 #create project##########################################################################################################################
 resource "aws_s3_bucket" "to-project" {
-  bucket = "to-project-${var.owner}"
+  bucket        = "to-project-${var.owner}"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_acl" "to-project" {
   bucket = aws_s3_bucket.to-project.id
   acl    = "private"
+
 }
 
 resource "aws_iam_role" "to-project" {
@@ -377,7 +425,16 @@ resource "aws_iam_role_policy" "to-project" {
   policy = <<EOF
 {
   "Version": "2012-10-17",
-  "Statement": [
+      "Statement": [
+        {
+      "Sid": "CodeBuildDefaultPolicy",
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:*",
+        "iam:${var.user}"
+      ],
+      "Resource": "*"      
+    },
     {
       "Effect": "Allow",
       "Resource": [
@@ -408,13 +465,13 @@ resource "aws_iam_role_policy" "to-project" {
         "ec2:CreateNetworkInterfacePermission"
       ],
       "Resource": [
-        "arn:aws:ec2:us-east-1:123456789012:network-interface/*"
+        "arn:aws:ec2:${var.region}:${var.owner}:network-interface/*"
       ],
       "Condition": {
-        "StringEquals": {
+        "StringLike": {
           "ec2:Subnet": [
-            "${aws_subnet.subnet_public.arn}",
-            "${aws_subnet.subnet_privet.arn}"
+            
+            "arn:aws:ec2:${var.region}:${var.owner}:subnet/*"
           ],
           "ec2:AuthorizedService": "codebuild.amazonaws.com"
         }
@@ -429,9 +486,28 @@ resource "aws_iam_role_policy" "to-project" {
         "${aws_s3_bucket.to-project.arn}",
         "${aws_s3_bucket.to-project.arn}/*"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:GetBucketAcl",
+        "s3:GetBucketLocation"
+        ],
+        "Resource": [
+            "arn:aws:s3:::to-project-${var.owner}/*",
+            "arn:aws:s3:::codepipeline-us-west-1-*",
+            
+            "arn:aws:s3:::deploy-bucket-175016064603/*"
+
+        ]
     }
-  ]
-}
+    ]
+  }
+
 EOF
 }
 
@@ -452,31 +528,32 @@ resource "aws_codebuild_project" "example" {
 
   environment {
     compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = "aws/codebuild/standard:1.0"
+    image                       = "aws/codebuild/standard:5.0"
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
 
-    environment_variable {
-      name  = "SOME_KEY1"
-      value = "SOME_VALUE1"
-    }
+    // environment_variable {
+    //   name  = "SOME_KEY1"
+    //   value = "SOME_VALUE1"
+    // }
 
-    environment_variable {
-      name  = "SOME_KEY2"
-      value = "SOME_VALUE2"
-      type  = "PARAMETER_STORE"
-    }
+    // environment_variable {
+    //   name  = "SOME_KEY2"
+    //   value = "SOME_VALUE2"
+    //   type  = "PARAMETER_STORE"
+    // }
   }
 
   logs_config {
-    // cloudwatch_logs {
-    //   group_name  = "log-group"
-    //   stream_name = "log-stream"
-    // }
+    cloudwatch_logs {
+      group_name  = "log-group"
+      stream_name = "log-stream"
+    }
 
     s3_logs {
-      status   = "ENABLED"
-      location = "${aws_s3_bucket.to-project.id}/build-log"
+      status   = "DISABLED"
+      
+      //"${aws_s3_bucket.to-project.id}/build-log"
     }
   }
 
@@ -489,28 +566,28 @@ resource "aws_codebuild_project" "example" {
       fetch_submodules = true
     }
     buildspec = data.local_file.buildspec.content
-    
+
   }
-  
+
   source_version = "main"
-  
-  vpc_config {
-    vpc_id = aws_vpc.vpc.id
 
-    subnets = [
-      aws_subnet.subnet_public.id,
-      aws_subnet.subnet_privet.id,
-    ]
+  // vpc_config {
+  //   vpc_id = aws_vpc.vpc.id
 
-    security_group_ids = [
-      aws_security_group.sg.id,
-      aws_security_group.sg.id,
-    ]
-  }
+  //   subnets = [
+  //     aws_subnet.subnet_public.id,
+  //     aws_subnet.subnet_privet.id,
+  //   ]
 
-  tags = {
-    Environment = "Test"
-  }
+  //   security_group_ids = [
+  //     aws_security_group.sg.id,
+  //     aws_security_group.sg.id,
+  //   ]
+  // }
+
+  // tags = {
+  //   Environment = "Test"
+  // }
 }
 
 // resource "aws_codebuild_project" "project-with-cache" {
@@ -554,7 +631,7 @@ resource "aws_codebuild_project" "example" {
 // }
 // #end create project######################################################################################################################
 resource "aws_codepipeline" "codepipeline" {
-  name     = "deploy_html_to_s3"
+  name     = "${var.aws_codepipeline_name}"
   role_arn = aws_iam_role.codepipeline_role.arn
 
   artifact_store {
@@ -622,7 +699,7 @@ resource "aws_codepipeline" "codepipeline" {
 
       configuration = {
         Extract    = "true"
-        BucketName = "deployment-bucket-${var.owner}"
+        BucketName = "to-project-${var.owner}"
       }
     }
   }

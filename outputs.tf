@@ -31,3 +31,7 @@
 // output "FullRepositoryId" {
 //   value = aws_codecommit_repository.repository.clone_url_http
 // }
+
+output "service_role" {
+  value = aws_iam_role.to-project.arn
+}

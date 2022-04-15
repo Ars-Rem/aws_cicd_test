@@ -10,3 +10,4 @@ terraform.tfvars
 main.old
 buildspec.yaml
 /buildspec
+policy.json
