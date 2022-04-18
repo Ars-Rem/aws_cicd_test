@@ -498,15 +498,11 @@ resource "aws_iam_role_policy" "to-project" {
         "s3:GetBucketLocation"
         ],
         "Resource": [
-            "arn:aws:s3:::to-project-${var.owner}/*",
-            "arn:aws:s3:::codepipeline-us-west-1-*",
-            
             "arn:aws:s3:::deploy-bucket-175016064603/*"
-
-        ]
+          ]
     }
-    ]
-  }
+  ]
+}
 
 EOF
 }
@@ -521,10 +517,10 @@ resource "aws_codebuild_project" "example" {
     type = "NO_ARTIFACTS"
   }
 
-  cache {
-    type     = "S3"
-    location = aws_s3_bucket.to-project.bucket
-  }
+  // cache {
+  //   type     = "S3"
+  //   location = aws_s3_bucket.to-project.bucket
+  // }
 
   environment {
     compute_type                = "BUILD_GENERAL1_SMALL"
