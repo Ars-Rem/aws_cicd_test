@@ -498,7 +498,8 @@ resource "aws_iam_role_policy" "to-project" {
         "s3:GetBucketLocation"
         ],
         "Resource": [
-            "arn:aws:s3:::deploy-bucket-175016064603/*"
+            "arn:aws:s3:::deploy-bucket-175016064603/*",
+            "arn:aws:s3:::to-project-175016064603/*"
           ]
     }
   ]

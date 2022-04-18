@@ -35,3 +35,7 @@
 output "service_role" {
   value = aws_iam_role.to-project.arn
 }
+
+output "bucket" {
+  value = aws_s3_bucket.to-project.arn
+}
