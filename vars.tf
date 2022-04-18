@@ -1,3 +1,14 @@
+variable "path" {
+  default = "https://github.com/"
+}
+variable "repo_owner" {
+  default = "Ars-Rem"
+}
+variable "repo_name" {
+  default = "html"
+}
+
+
 variable "owner" {
   description = "owner"
   type        = string
@@ -82,15 +93,7 @@ variable "keys" {
   }
   type = map(string)
 }
-variable "path" {
-  default = "https://github.com/"
-}
-variable "repo_owner" {
-  default = "Ars-Rem"
-}
-variable "repo_name" {
-  default = "html"
-}
+
 
 variable "alias_name" {
   type    = string
