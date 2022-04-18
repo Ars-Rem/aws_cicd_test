@@ -6,8 +6,6 @@ state.tf
 terraform.tfvars
 /test
 /application
-
-main.old
 buildspec.yaml
 /buildspec
 policy.json
